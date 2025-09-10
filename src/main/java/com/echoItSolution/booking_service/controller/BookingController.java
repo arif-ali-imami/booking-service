@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("booking")
+@RequestMapping("/booking")
 public class BookingController {
     @Autowired
     private BookingService bookingService;
