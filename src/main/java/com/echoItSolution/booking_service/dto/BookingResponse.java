@@ -1,4 +1,4 @@
-package com.echoItSolution.booking_service.common;
+package com.echoItSolution.booking_service.dto;
 
 import com.echoItSolution.booking_service.entity.Booking;
 import lombok.AllArgsConstructor;

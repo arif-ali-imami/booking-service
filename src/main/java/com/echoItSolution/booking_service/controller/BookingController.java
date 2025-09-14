@@ -1,7 +1,7 @@
 package com.echoItSolution.booking_service.controller;
 
-import com.echoItSolution.booking_service.common.BookingRequest;
-import com.echoItSolution.booking_service.common.BookingResponse;
+import com.echoItSolution.booking_service.dto.BookingRequest;
+import com.echoItSolution.booking_service.dto.BookingResponse;
 import com.echoItSolution.booking_service.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
