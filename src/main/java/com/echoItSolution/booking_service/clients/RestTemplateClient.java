@@ -12,7 +12,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Component
-public class RestClient {
+public class RestTemplateClient {
 
     private final RestTemplate restTemplate;
 

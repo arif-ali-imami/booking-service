@@ -5,3 +5,7 @@ spring:
     name: booking-service
   config:
     import: optional:configserver:http://localhost:8888
+
+rest:
+  client:
+    enabled: true
