@@ -4,11 +4,13 @@ import com.echoItSolution.booking_service.clients.RestTemplateClient;
 import com.echoItSolution.booking_service.clients.UserFeignClient;
 import com.echoItSolution.booking_service.clients.UserHttpInterface;
 import com.echoItSolution.booking_service.dto.UserDTO;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -99,10 +101,20 @@ public class InterCommunicationController {
     }
 
     @GetMapping(value = "httpInterface/get-all-users")
-    public List<UserDTO> getAllUsersViaHttpInterface() {
+    @CircuitBreaker(name = "userServiceCircuitBreaker", fallbackMethod = "getAllUsersViaHttpInterfaceFallback")
+    public List<UserDTO> getAllUsersViaHttpInterface(@RequestParam(required = false) String data) {
+        System.out.println("Data: " + data);
         List<UserDTO> userDTOList = userHttpInterface.getAllUsers();
         userDTOList.forEach(System.out::println);
         return userDTOList;
+    }
+
+    public List<UserDTO> getAllUsersViaHttpInterfaceFallback(String data, Throwable throwable) {
+        System.out.println("DATA from fallbackMethod "+data);
+        System.out.println("Fallback executed: " + throwable.getMessage());
+        return List.of(UserDTO.builder()
+                .userId(123L)
+                .userName("Dummy user").build());
     }
 
 }
