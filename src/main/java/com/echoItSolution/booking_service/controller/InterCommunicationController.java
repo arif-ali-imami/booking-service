@@ -4,7 +4,7 @@ import com.echoItSolution.booking_service.clients.RestTemplateClient;
 import com.echoItSolution.booking_service.clients.UserFeignClient;
 import com.echoItSolution.booking_service.clients.UserHttpInterface;
 import com.echoItSolution.booking_service.dto.UserDTO;
-import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -106,7 +106,9 @@ public class InterCommunicationController {
     @GetMapping(value = "httpInterface/get-all-users")
 //    @CircuitBreaker(name = "userServiceCircuitBreaker", fallbackMethod = "fallbackMethod")
 //    @Retry(name = "userServiceRetry", fallbackMethod = "fallbackMethod")
-    @RateLimiter(name = "userServiceRateLimiter", fallbackMethod = "fallbackMethod")
+//    @RateLimiter(name = "userServiceRateLimiter"/*, fallbackMethod = "fallbackMethod"*/)
+//    @Bulkhead(name = "userServiceSemaphoreBulkhead", type = Bulkhead.Type.SEMAPHORE/*, fallbackMethod = "fallbackMethod"*/)
+    @Bulkhead(name = "userServiceBulkhead", type = Bulkhead.Type.THREADPOOL/*, fallbackMethod = "fallbackMethod"*/)
     public List<UserDTO> getAllUsersViaHttpInterface(@RequestParam(required = false) String data) {
         System.out.println("Retry count: " + retryCount);
         System.out.println("Current timestamp: " + new Date().toInstant().toString());
