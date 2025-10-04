@@ -4,7 +4,7 @@ import com.echoItSolution.booking_service.clients.RestTemplateClient;
 import com.echoItSolution.booking_service.clients.UserFeignClient;
 import com.echoItSolution.booking_service.clients.UserHttpInterface;
 import com.echoItSolution.booking_service.dto.UserDTO;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Date;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -27,6 +28,8 @@ public class InterCommunicationController {
     private final RestClient.Builder restClientBuilder;
     private final WebClient webClient;
     private final UserHttpInterface userHttpInterface;
+
+    private Integer retryCount = 1;
 
 
     @GetMapping(value = "restCall/get-all-users")
@@ -101,17 +104,24 @@ public class InterCommunicationController {
     }
 
     @GetMapping(value = "httpInterface/get-all-users")
-    @CircuitBreaker(name = "userServiceCircuitBreaker", fallbackMethod = "getAllUsersViaHttpInterfaceFallback")
+//    @CircuitBreaker(name = "userServiceCircuitBreaker", fallbackMethod = "fallbackMethod")
+//    @Retry(name = "userServiceRetry", fallbackMethod = "fallbackMethod")
+    @RateLimiter(name = "userServiceRateLimiter", fallbackMethod = "fallbackMethod")
     public List<UserDTO> getAllUsersViaHttpInterface(@RequestParam(required = false) String data) {
-        System.out.println("Data: " + data);
+        System.out.println("Retry count: " + retryCount);
+        System.out.println("Current timestamp: " + new Date().toInstant().toString());
+        retryCount += 1;
         List<UserDTO> userDTOList = userHttpInterface.getAllUsers();
         userDTOList.forEach(System.out::println);
         return userDTOList;
     }
 
-    public List<UserDTO> getAllUsersViaHttpInterfaceFallback(String data, Throwable throwable) {
+    // fallback method signature should be same as original method
+    // with additional parameter of type Throwable
+    public List<UserDTO> fallbackMethod(String data, Throwable throwable) {
         System.out.println("DATA from fallbackMethod "+data);
         System.out.println("Fallback executed: " + throwable.getMessage());
+        retryCount = 1;
         return List.of(UserDTO.builder()
                 .userId(123L)
                 .userName("Dummy user").build());
